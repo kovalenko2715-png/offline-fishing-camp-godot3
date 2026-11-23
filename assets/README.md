@@ -1,15 +1,17 @@
-# Asset integration status
+# Asset integration
 
-The project supports local `.glb` and `.dae` assets through `scripts/AssetLoader.gd`.
-At runtime, the loader does not download anything or access the internet.
+The project is offline and initially uses procedural meshes. No external model is downloaded at runtime.
 
-Place reviewed assets here:
+## CC0 and permissive candidates
 
-- `assets/models/fish/`
-- `assets/models/camping/`
-- `assets/models/buildings/`
-- `assets/models/fishing/`
-- `assets/models/nature/`
-- `assets/licenses/`
+- Kenney Camping Kit: https://kenney.nl/assets/camping-kit
+- Kenney Nature Kit: https://kenney.nl/assets/nature-kit
+- Quaternius Simple Camping: https://quaternius.com/packs/simplecamping.html
+- Quaternius Simple Tools: https://quaternius.com/packs/simpletools.html
 
-The exact intended filenames and sources are listed in `assets/manifest.json`.
+## MIT implementation references
+
+- Pandora RPG database: https://github.com/bitbrain/pandora
+- Npcify example: https://github.com/midaikidev/npcify-example-godot
+
+These are references only. Their code should be integrated only after checking Godot-version compatibility and dependencies.
