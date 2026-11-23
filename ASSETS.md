@@ -1,26 +1,12 @@
-# Готовые ресурсы для игры
+# Asset candidates
 
-Цель: Android-смартфон, Godot 3, офлайн. Подбираем готовые low-poly модели и проверяем лицензию каждого набора перед включением в игру. Сторонние загрузки для запуска не нужны: ресурсы будут лежать локально в проекте.
+Use only assets whose individual archive/license is confirmed CC0 or permissive.
 
-## Кандидаты
+- Fish: https://quaternius.com/packs/animatedfishpack.html
+- Tent/camping props: https://quaternius.com/packs/simplecamping.html
+- Tools/tackle: https://quaternius.com/packs/simpletools.html
+- Cabin/buildings: https://quaternius.com/packs/modularbuildings.html
+- Environment: https://kenney.nl/assets/nature-kit
+- PBR textures: https://ambientcg.com/
 
-| Что нужно | Набор / источник | Примечание |
-|---|---|---|
-| Палатка, стол, лагерные вещи | [Quaternius Simple Camping](https://quaternius.com/packs/simplecamping.html) | Готовые низкополигональные модели; проверить лицензию в скачанном наборе. |
-| Рыбы | [Quaternius Animated Fish](https://quaternius.com/packs/animatedfishpack.html) | Подходит для рыб в воде; проверить форматы и лицензию архива. |
-| Удочки и инструменты | [Quaternius Simple Tools](https://quaternius.com/packs/simpletools.html) | Использовать подходящие инструменты/предметы; для удочки отдельно проверить состав архива. |
-| Деревья, камни и окружение | [Kenney 3D assets](https://kenney.nl/assets) | Выбрать совместимый набор окружения и проверить лицензию конкретного набора. |
-| Материалы земли и воды | [ambientCG](https://ambientcg.com/) | CC0; текстуры использовать локально в проекте. |
-| Дополнительные модели | [Poly Haven](https://polyhaven.com/models) | CC0; выбирать лёгкие модели/материалы для мобильной производительности. |
-
-## Правила включения в проект
-
-- Предпочитать CC0 и явно разрешённые для переработки/распространения лицензии.
-- Не полагаться на общую лицензию сайта: сохранить лицензию каждого набора в `assets/licenses/`.
-- Не добавлять модели с неясными правами или запретом на распространение.
-- Проверить импорт в используемой версии Godot 3 и уменьшить текстуры/полигоны для Android.
-- Держать все сцены, модели и текстуры внутри игры, чтобы она работала офлайн.
-
-## Статус
-
-Пока это список источников для подбора. Сами архивы моделей ещё не добавлены в репозиторий; их нужно скачать, проверить лицензию и импортировать в `assets/`.
+Before adding a model, preserve its license text in `assets/licenses/` and verify that Godot 3 imports it without extra proprietary plugins.
