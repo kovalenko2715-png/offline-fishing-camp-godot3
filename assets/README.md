@@ -1,17 +1,23 @@
-# Asset integration
+# Графические ресурсы фермы
 
-The project is offline and initially uses procedural meshes. No external model is downloaded at runtime.
+В проекте намеренно нет визуальных моделей из примитивов или созданных кодом. Скрипт фермы не генерирует геометрию: он загружает готовую сцену из `res://assets/models/farm/farm_scene.glb`.
 
-## CC0 and permissive candidates
+## Ресурсы-кандидаты
 
-- Kenney Camping Kit: https://kenney.nl/assets/camping-kit
-- Kenney Nature Kit: https://kenney.nl/assets/nature-kit
-- Quaternius Simple Camping: https://quaternius.com/packs/simplecamping.html
-- Quaternius Simple Tools: https://quaternius.com/packs/simpletools.html
+- **Постройки фермы:** [Quaternius Farm Buildings Pack](https://quaternius.com/packs/farmbuildings.html)
+- **Животные:** [Quaternius Farm Animal Pack](https://quaternius.com/assets/farmanimalpack.html)
+- **Растения и окружение:** [Каталог Quaternius](https://quaternius.com/assets.html)
+- **Лицензия Quaternius:** [CC0 / условия](https://quaternius.com/license.html)
 
-## MIT implementation references
+## Важно: модели пока не включены
 
-- Pandora RPG database: https://github.com/bitbrain/pandora
-- Npcify example: https://github.com/midaikidev/npcify-example-godot
+В GitHub-инструментах этой сессии доступно изменение текстовых файлов, но не скачивание и коммит бинарных архивов моделей. Поэтому в репозитории пока нет GLB-файлов, и без них игровая сцена покажет предупреждение вместо поддельной визуальной заглушки. Это сделано намеренно: не подменять требование готовых моделей примитивами.
 
-These are references only. Their code should be integrated only after checking Godot-version compatibility and dependencies.
+Чтобы включить визуальную ферму:
+
+1. Скачайте пакеты с официальных страниц выше и проверьте лицензию в самом архиве.
+2. Импортируйте готовые модели в Godot 4.
+3. Соберите из них сцену окружения (без геометрии, генерируемой скриптом) и сохраните как `assets/models/farm/farm_scene.glb`.
+4. Добавьте модели животных и растений из соответствующих паков и их лицензионные тексты в `assets/licenses/`.
+
+В `manifest.json` перечислены ожидаемые пути и статус интеграции. Не распространяйте модели, пока лицензия конкретного архива не проверена.

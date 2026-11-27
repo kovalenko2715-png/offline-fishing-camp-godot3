@@ -1,23 +1,15 @@
-; Engine configuration file.
-; Best edited using the editor and not directly.
-
+; Godot 4 project configuration
 config_version=5
 
 [application]
-
-config/name="Offline RPG Camp"
+config/name="Farmstead 3D"
 run/main_scene="res://Main.tscn"
 
 [display]
-
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/handheld/orientation=1
 
 [rendering]
-
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/vram_compression/import_etc2_astc=true
-
-[input_devices]
-
-pointing/emulate_touch_from_mouse=true

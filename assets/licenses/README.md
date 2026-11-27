@@ -1,20 +1,11 @@
-# Asset license register
+# Реестр лицензий моделей
 
-No downloaded third-party binary model is currently included in this repository.
-Before any model is added, the following must be documented for that exact file:
+До фактического включения ресурсов модели не считаются добавленными или проверенными.
 
-1. Creator name or publisher.
-2. Source URL.
-3. License name and URL.
-4. Permission to modify and redistribute.
-5. Attribution text, if the license requires it.
-6. Godot 3 import format and Android/GLES2 test result.
+| Пак | Источник | Лицензия | Статус |
+|---|---|---|---|
+| Farm Buildings Pack | https://quaternius.com/packs/farmbuildings.html | Требует проверки приложенного файла лицензии | Не скачан |
+| Farm Animal Pack | https://quaternius.com/assets/farmanimalpack.html | Требует проверки приложенного файла лицензии | Не скачан |
+| Растения и окружение | https://quaternius.com/assets.html | Проверять страницу и лицензию каждого пакета | Не выбран |
 
-Preferred sources:
-
-- Quaternius: https://quaternius.com/
-- Kenney: https://kenney.nl/
-- Poly Haven: https://polyhaven.com/models
-- ambientCG: https://ambientcg.com/
-
-No asset may be used merely because a website advertises it as "free". The license bundled with the downloaded archive or shown on the original asset page is authoritative.
+После добавления пакета сохраните его исходный текст лицензии здесь и заполните сведения о создателе, точном URL, разрешении на модификацию/распространение и атрибуции.

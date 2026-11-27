@@ -1,42 +1,30 @@
 {
-  "format": 1,
-  "asset_pack": "low_poly_camping_and_fishing",
-  "license_policy": "CC0 or equivalent permissive license only",
-  "assets": {
-    "fish": {
-      "source": "https://quaternius.com/packs/animatedfishpack.html",
-      "required_path": "res://assets/models/fish/fish.glb",
-      "status": "pending_download_and_license_review"
+  "format": 2,
+  "game": "Three-dimensional farm",
+  "engine": "Godot 4.x",
+  "visual_policy": "No primitive visual placeholders or code-generated visual models. Load licensed external model assets only.",
+  "assets": [
+    {
+      "id": "farm_scene",
+      "path": "res://assets/models/farm/farm_scene.glb",
+      "source": "https://quaternius.com/packs/farmbuildings.html",
+      "license": "CC0 1.0; verify the included asset license before redistribution",
+      "status": "required; not present yet",
+      "notes": "Import the farm environment/building models from the source pack, compose a farm scene in Godot, and save it at this path."
     },
-    "tent": {
-      "source": "https://quaternius.com/packs/simplecamping.html",
-      "required_path": "res://assets/models/camping/tent.glb",
-      "status": "pending_download_and_license_review"
+    {
+      "id": "farm_animals",
+      "path": "res://assets/models/farm/animals/",
+      "source": "https://quaternius.com/assets/farmanimalpack.html",
+      "license": "CC0 1.0; verify the included asset license before redistribution",
+      "status": "planned"
     },
-    "table": {
-      "source": "https://quaternius.com/packs/simplecamping.html",
-      "required_path": "res://assets/models/camping/table.glb",
-      "status": "pending_download_and_license_review"
-    },
-    "campfire": {
-      "source": "https://kenney.nl/assets/camping-kit",
-      "required_path": "res://assets/models/camping/campfire.glb",
-      "status": "pending_download_and_license_review"
-    },
-    "shop": {
-      "source": "https://quaternius.com/packs/modularbuildings.html",
-      "required_path": "res://assets/models/buildings/shop.glb",
-      "status": "pending_download_and_license_review"
-    },
-    "tools": {
-      "source": "https://quaternius.com/packs/simpletools.html",
-      "required_path": "res://assets/models/fishing/tools.glb",
-      "status": "pending_download_and_license_review"
-    },
-    "nature": {
-      "source": "https://kenney.nl/assets/nature-kit",
-      "required_path": "res://assets/models/nature/nature.glb",
-      "status": "pending_download_and_license_review"
+    {
+      "id": "farm_plants",
+      "path": "res://assets/models/farm/plants/",
+      "source": "https://quaternius.com/assets.html",
+      "license": "Check exact pack license before use",
+      "status": "planned"
     }
-  }
+  ]
 }

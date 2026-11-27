@@ -1,203 +1,213 @@
 extends Node3D
 
-const SAVE_PATH := "user://save.json"
+# This game intentionally contains no generated visual meshes. All visible farm art
+# is loaded from redistributable GLB/GLTF assets listed in assets/manifest.json.
+const FARM_SCENE_PATH := "res://assets/models/farm/farm_scene.glb"
+const SAVE_PATH := "user://farm_save.json"
+const PLOT_POSITIONS := [Vector3(-3.0, 0.0, 1.0), Vector3(-1.0, 0.0, 1.0), Vector3(1.0, 0.0, 1.0), Vector3(3.0, 0.0, 1.0)]
+const GROW_SECONDS := 45.0
 
-var wood := 0
-var stone := 0
-var fish := 0
-var coins := 50
-var hp := 100
-var warmth := 100
-var completed_quest := false
-var joy := Vector2.ZERO
-
-var joystick: Control
-var stick: Label
-var quest_label: Label
-var stats_label: Label
 var player: CharacterBody3D
+var camera: Camera3D
+var hud: Label
+var notice: Label
+var coins := 25
+var seeds := 4
+var harvest := 0
+var plots: Array[Dictionary] = []
+var farm_asset_loaded := false
 
 func _ready() -> void:
-	load_save()
-	create_world()
-	create_player()
-	create_mobile_ui()
+	_load_game()
+	_load_farm_art()
+	_create_player_controller()
+	_create_hud()
+	for index in PLOT_POSITIONS.size():
+		plots.append({"crop": "", "growth": 0.0, "watered": false})
+	_update_hud()
 
-func create_box(size: Vector3, position: Vector3, color: Color, parent: Node = self) -> MeshInstance3D:
-	var mesh_instance := MeshInstance3D.new()
-	mesh_instance.position = position
-	var box_mesh := BoxMesh.new()
-	box_mesh.size = size
-	mesh_instance.mesh = box_mesh
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	mesh_instance.material_override = material
-	parent.add_child(mesh_instance)
-	return mesh_instance
+func _load_farm_art() -> void:
+	if not ResourceLoader.exists(FARM_SCENE_PATH):
+		push_warning("Farm scene asset missing: " + FARM_SCENE_PATH)
+		return
+	var packed := load(FARM_SCENE_PATH) as PackedScene
+	if packed == null:
+		push_warning("Farm scene is not a valid Godot-importable scene: " + FARM_SCENE_PATH)
+		return
+	var farm := packed.instantiate()
+	farm.name = "FarmArt"
+	add_child(farm)
+	farm_asset_loaded = true
 
-func create_world() -> void:
-	create_box(Vector3(30, 0.3, 30), Vector3(0, -0.15, 0), Color("488a3d"))
-	create_box(Vector3(14, 0.2, 10), Vector3(0, 0.02, -10), Color("2a879a"))
-	create_box(Vector3(15, 0.06, 2), Vector3(0, 0.14, -4.5), Color("c9b27b"))
-
-	create_box(Vector3(4, 2.2, 3), Vector3(-7, 1.1, 4), Color("8d3228"))
-	create_box(Vector3(4.4, 0.25, 3.4), Vector3(-7, 2.35, 4), Color("3d2922"))
-
-	create_box(Vector3(2.6, 0.14, 1.2), Vector3(-2, 1.15, 4), Color("70472e"))
-	create_box(Vector3(0.16, 1.1, 0.16), Vector3(-3, 0.55, 4), Color("4d321f"))
-	create_box(Vector3(0.16, 1.1, 0.16), Vector3(-1, 0.55, 4), Color("4d321f"))
-
-	create_box(Vector3(1.4, 0.08, 1.4), Vector3(3.5, 0.12, 4), Color("4b2a1c"))
-	create_box(Vector3(0.4, 1.1, 0.4), Vector3(3.5, 0.7, 4), Color("e96b27"))
-
-	create_box(Vector3(4.6, 3.2, 3.8), Vector3(7.5, 1.6, 5), Color("987b50"))
-	create_box(Vector3(5.2, 0.25, 4.4), Vector3(7.5, 3.3, 5), Color("33291f"))
-
-	for i in range(12):
-		var x := -13.0 + i * 2.4
-		create_box(Vector3(0.45, 2.4, 0.45), Vector3(x, 1.2, 9), Color("5a3822"))
-		create_box(Vector3(2.2, 2.2, 2.2), Vector3(x, 3.2, 9), Color("225c28"))
-
-	for i in range(6):
-		var stone_node := create_box(Vector3(1.0, 0.7, 0.8), Vector3(-10 + i * 4.0, 0.35, -7), Color("777a78"))
-		stone_node.name = "ResourceStone"
-
-func create_player() -> void:
+func _create_player_controller() -> void:
 	player = CharacterBody3D.new()
-	player.name = "Player"
-	player.position = Vector3(0, 1.2, 7)
+	player.name = "PlayerController"
+	player.position = Vector3(0.0, 1.0, 7.0)
+	var collider := CollisionShape3D.new()
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = 0.38
+	capsule.height = 1.7
+	collider.shape = capsule
+	collider.position.y = 0.85
+	player.add_child(collider)
 	add_child(player)
 
-	var body := MeshInstance3D.new()
-	var mesh := CapsuleMesh.new()
-	mesh.radius = 0.45
-	mesh.height = 1.8
-	body.mesh = mesh
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("3e78b5")
-	body.material_override = material
-	body.position.y = 0.9
-	player.add_child(body)
-
-	var camera := Camera3D.new()
+	camera = Camera3D.new()
+	camera.name = "FarmCamera"
+	camera.position = Vector3(0.0, 7.5, 10.0)
+	camera.rotation_degrees.x = -32.0
 	camera.current = true
-	camera.position = Vector3(0, 6.5, 10)
-	camera.rotation_degrees.x = -32
 	player.add_child(camera)
 
-func create_mobile_ui() -> void:
-	var canvas := CanvasLayer.new()
-	add_child(canvas)
+func _create_hud() -> void:
+	var layer := CanvasLayer.new()
+	layer.name = "FarmHUD"
+	add_child(layer)
+	var panel := VBoxContainer.new()
+	panel.position = Vector2(18, 16)
+	panel.custom_minimum_size = Vector2(340, 0)
+	layer.add_child(panel)
+	hud = Label.new()
+	hud.add_theme_font_size_override("font_size", 18)
+	panel.add_child(hud)
+	notice = Label.new()
+	notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	panel.add_child(notice)
+	if not farm_asset_loaded:
+		notice.text = "Не найдена модель фермы. Добавьте farm_scene.glb по инструкции в assets/README.md. Визуальные заглушки не создаются."
+		notice.add_theme_color_override("font_color", Color(1.0, 0.76, 0.35))
 
-	stats_label = Label.new()
-	stats_label.position = Vector2(30, 20)
-	stats_label.scale = Vector2(1.3, 1.3)
-	canvas.add_child(stats_label)
+	var actions := HBoxContainer.new()
+	panel.add_child(actions)
+	_add_action_button(actions, "Посадить", _plant_nearby)
+	_add_action_button(actions, "Полить", _water_nearby)
+	_add_action_button(actions, "Собрать", _harvest_nearby)
+	_add_action_button(actions, "Продать урожай", _sell_harvest)
 
-	quest_label = Label.new()
-	quest_label.position = Vector2(30, 56)
-	quest_label.scale = Vector2(1.25, 1.25)
-	canvas.add_child(quest_label)
-
-	var gather_button := Button.new()
-	gather_button.text = "Собрать"
-	gather_button.position = Vector2(820, 420)
-	gather_button.size = Vector2(180, 65)
-	gather_button.pressed.connect(_on_gather_pressed)
-	canvas.add_child(gather_button)
-
-	var interact_button := Button.new()
-	interact_button.text = "Лагерь / Магазин"
-	interact_button.position = Vector2(820, 500)
-	interact_button.size = Vector2(180, 65)
-	interact_button.pressed.connect(_on_interact_pressed)
-	canvas.add_child(interact_button)
-
-	joystick = Control.new()
-	joystick.position = Vector2(30, 430)
-	joystick.size = Vector2(200, 150)
-	joystick.gui_input.connect(_on_joystick_input)
-	canvas.add_child(joystick)
-
-	stick = Label.new()
-	stick.text = "●"
-	stick.position = Vector2(85, 55)
-	stick.scale = Vector2(3, 3)
-	stick.modulate = Color(1, 1, 1, 0.65)
-	joystick.add_child(stick)
-
-	update_ui()
-
-func update_ui() -> void:
-	stats_label.text = "HP %d  Тепло %d  Дерево %d  Камень %d  Рыба %d  Монет %d" % [hp, warmth, wood, stone, fish, coins]
-	quest_label.text = "Квест: собери дерево 5/5 и камень 3/3" if not completed_quest else "Квест выполнен — получи награду у лагеря"
+func _add_action_button(parent: Control, title: String, callback: Callable) -> void:
+	var button := Button.new()
+	button.text = title
+	button.pressed.connect(callback)
+	parent.add_child(button)
 
 func _physics_process(delta: float) -> void:
-	if not player:
+	if not is_instance_valid(player):
 		return
-	var direction := Vector3(joy.x, 0, joy.y)
-	if direction.length() > 0.1:
-		player.velocity = direction.normalized() * 4.0
-		player.move_and_slide()
-		player.position.x = clamp(player.position.x, -13.0, 13.0)
-		player.position.z = clamp(player.position.z, -4.0, 12.0)
+	var input := Vector2.ZERO
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+		input.x -= 1.0
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+		input.x += 1.0
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+		input.y -= 1.0
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+		input.y += 1.0
+	var direction := Vector3(input.x, 0.0, input.y).normalized()
+	player.velocity.x = direction.x * 4.0
+	player.velocity.z = direction.z * 4.0
+	player.velocity.y -= 20.0 * delta
+	player.move_and_slide()
+	for plot in plots:
+		if plot["crop"] != "" and plot["watered"] and plot["growth"] < 1.0:
+			plot["growth"] = minf(1.0, plot["growth"] + delta / GROW_SECONDS)
 
-func _on_joystick_input(event: InputEvent) -> void:
-	if event is InputEventScreenDrag or event is InputEventScreenTouch:
-		var relative := event.position - joystick.position - Vector2(100, 75)
-		if event is InputEventScreenTouch and not event.pressed:
-			relative = Vector2.ZERO
-		joy = relative.limit_length(55.0) / 55.0
-		stick.position = Vector2(85 + joy.x * 25, 55 + joy.y * 25)
+func _nearest_plot_index() -> int:
+	var nearest := -1
+	var best_distance := 2.8
+	for index in PLOT_POSITIONS.size():
+		var distance := Vector2(player.position.x, player.position.z).distance_to(Vector2(PLOT_POSITIONS[index].x, PLOT_POSITIONS[index].z))
+		if distance < best_distance:
+			best_distance = distance
+			nearest = index
+	return nearest
 
-func _on_gather_pressed() -> void:
-	var distance_to_stones := INF
-	for node in get_children():
-		if node is MeshInstance3D and node.name == "ResourceStone":
-			distance_to_stones = min(distance_to_stones, player.position.distance_to(node.position))
-	if distance_to_stones < 5.0:
-		stone += 1
+func _plant_nearby() -> void:
+	var index := _nearest_plot_index()
+	if index < 0:
+		_set_notice("Подойдите к грядке.")
+	elif seeds <= 0:
+		_set_notice("Семена закончились. Продайте урожай, чтобы заработать монеты.")
+	elif plots[index]["crop"] != "":
+		_set_notice("Эта грядка уже занята.")
 	else:
-		wood += 1
-	if wood >= 5 and stone >= 3:
-		completed_quest = true
-	update_ui()
-	save_game()
+		seeds -= 1
+		plots[index] = {"crop": "Пшеница", "growth": 0.0, "watered": false}
+		_set_notice("Пшеница посажена. Полейте грядку, чтобы запустить рост.")
+	_update_hud()
+	_save_game()
 
-func _on_interact_pressed() -> void:
-	if player.position.distance_to(Vector3(-7, 1.2, 4)) < 5:
-		warmth = 100
-		wood = max(0, wood - 1)
-	elif player.position.distance_to(Vector3(7.5, 1.2, 5)) < 5:
-		if coins >= 10:
-			coins -= 10
-			fish += 1
+func _water_nearby() -> void:
+	var index := _nearest_plot_index()
+	if index < 0:
+		_set_notice("Подойдите к грядке.")
+	elif plots[index]["crop"] == "":
+		_set_notice("Сначала посадите семена.")
+	elif plots[index]["growth"] >= 1.0:
+		_set_notice("Урожай уже созрел.")
 	else:
-		quest_label.text = "Подойдите к палатке или магазину"
+		plots[index]["watered"] = true
+		_set_notice("Грядка полита. Урожай созреет примерно за 45 секунд.")
+	_update_hud()
+	_save_game()
+
+func _harvest_nearby() -> void:
+	var index := _nearest_plot_index()
+	if index < 0:
+		_set_notice("Подойдите к грядке.")
+	elif plots[index]["growth"] < 1.0:
+		_set_notice("Урожай ещё не созрел. Посадите и полейте грядку.")
+	else:
+		harvest += 1
+		plots[index] = {"crop": "", "growth": 0.0, "watered": false}
+		_set_notice("Урожай собран!")
+	_update_hud()
+	_save_game()
+
+func _sell_harvest() -> void:
+	if harvest == 0:
+		_set_notice("Пока нечего продавать.")
 		return
-	if completed_quest:
-		completed_quest = false
-		coins += 50
-	update_ui()
-	save_game()
+	coins += harvest * 8
+	seeds += harvest
+	_set_notice("Урожай продан: +%d монет, получено %d семян." % [harvest * 8, harvest])
+	harvest = 0
+	_update_hud()
+	_save_game()
 
-func save_game() -> void:
-	var data := {"wood": wood, "stone": stone, "fish": fish, "coins": coins, "hp": hp, "warmth": warmth, "completed_quest": completed_quest}
+func _set_notice(text: String) -> void:
+	notice.text = text
+
+func _update_hud() -> void:
+	if not is_instance_valid(hud):
+		return
+	var ready_count := 0
+	var growing_count := 0
+	for plot in plots:
+		if plot["growth"] >= 1.0:
+			ready_count += 1
+		elif plot["crop"] != "":
+			growing_count += 1
+	hud.text = "ФЕРМА   Монеты: %d   Семена: %d   Урожай: %d\nГрядки: %d растёт · %d готово  |  WASD / стрелки — движение" % [coins, seeds, harvest, growing_count, ready_count]
+
+func _save_game() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	file.store_string(JSON.stringify(data))
+	if file == null:
+		return
+	file.store_string(JSON.stringify({"coins": coins, "seeds": seeds, "harvest": harvest, "plots": plots}))
 
-func load_save() -> void:
+func _load_game() -> void:
 	if not FileAccess.file_exists(SAVE_PATH):
 		return
 	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var parsed := JSON.new()
-	if parsed.parse(file.get_as_text()) != OK:
+	if file == null:
 		return
-	var data: Dictionary = parsed.data
-	wood = int(data.get("wood", 0))
-	stone = int(data.get("stone", 0))
-	fish = int(data.get("fish", 0))
-	coins = int(data.get("coins", 50))
-	hp = int(data.get("hp", 100))
-	warmth = int(data.get("warmth", 100))
-	completed_quest = bool(data.get("completed_quest", false))
+	var parsed := JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	coins = int(parsed.get("coins", coins))
+	seeds = int(parsed.get("seeds", seeds))
+	harvest = int(parsed.get("harvest", harvest))
+	var saved_plots: Array = parsed.get("plots", [])
+	for index in min(saved_plots.size(), PLOT_POSITIONS.size()):
+		if typeof(saved_plots[index]) == TYPE_DICTIONARY:
+			plots.append(saved_plots[index])
